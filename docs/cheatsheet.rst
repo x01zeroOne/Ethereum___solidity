@@ -118,7 +118,7 @@ Contract-related
 
 - ``this`` (current contract's type): the current contract, explicitly convertible to ``address`` or ``address payable``
 - ``super``: a contract one level higher in the inheritance hierarchy
-- ``selfdestruct(address payable recipient)``: destroy the current contract, sending its funds to the given address
+- ``selfdestruct(address payable recipient)``: sends all Ether in the account to the target, except when `SELFDESTRUCT` is called in the same transaction a contract was created in; in which case it will destroy the current contract, sending its funds to the given address.
 
 .. index:: type;name, type;creationCode, type;runtimeCode, type;interfaceId, type;min, type;max
 
