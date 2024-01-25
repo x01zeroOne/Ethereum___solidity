@@ -69,6 +69,7 @@ At least a day before the release:
        Make sure it contains four binaries: ``solc-windows.exe``, ``solc-macos``, ``solc-static-linux`` and ``soljson.js``.
  - [ ] Take the ``solc-bin-binaries.tar`` tarball from ``c_release_binaries`` run of the tagged commit in circle-ci and add all binaries from it to solc-bin.
  - [ ] Run ``npm run update -- --reuse-hashes`` in ``solc-bin`` and verify that the script has updated ``list.js``, ``list.txt`` and ``list.json`` files correctly and that symlinks to the new release have been added in ``solc-bin/wasm/`` and ``solc-bin/emscripten-wasm32/``.
+       **Note: you should run `npm install` prior to the above step, and must run it if you've got a clean checkout of the solc-bin repo.**
  - [ ] Create a pull request in solc-bin and merge.
 
 ### Homebrew and MacOS
