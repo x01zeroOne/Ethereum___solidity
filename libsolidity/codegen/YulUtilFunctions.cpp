@@ -89,6 +89,7 @@ std::string YulUtilFunctions::copyToMemoryFunction(bool _fromCalldata, bool _cle
 		(_cleanup ? "_with_cleanup"s : ""s);
 
 	return m_functionCollector.createFunction(functionName, [&]() {
+		// calldata -> memory
 		if (_fromCalldata)
 		{
 			return Whiskers(R"(
@@ -101,21 +102,35 @@ std::string YulUtilFunctions::copyToMemoryFunction(bool _fromCalldata, bool _cle
 			("cleanup", _cleanup)
 			.render();
 		}
+		// memory -> memory
 		else
 		{
-			return Whiskers(R"(
-				function <functionName>(src, dst, length) {
-					let i := 0
-					for { } lt(i, length) { i := add(i, 32) }
-					{
-						mstore(add(dst, i), mload(add(src, i)))
+			// use MCOPY (cancun+)
+			if (m_evmVersion.hasMcopy())
+				return Whiskers(R"(
+					function <functionName>(src, dst, length) {
+						mcopy(dst, src, length)
+						<?cleanup>mstore(add(dst, length), 0)</cleanup>
 					}
-					<?cleanup>mstore(add(dst, length), 0)</cleanup>
-				}
-			)")
-			("functionName", functionName)
-			("cleanup", _cleanup)
-			.render();
+				)")
+				("functionName", functionName)
+				("cleanup", _cleanup)
+				.render();
+			// mstore mload loop
+			else
+				return Whiskers(R"(
+					function <functionName>(src, dst, length) {
+						let i := 0
+						for { } lt(i, length) { i := add(i, 32) }
+						{
+							mstore(add(dst, i), mload(add(src, i)))
+						}
+						<?cleanup>mstore(add(dst, length), 0)</cleanup>
+					}
+				)")
+				("functionName", functionName)
+				("cleanup", _cleanup)
+				.render();
 		}
 	});
 }
