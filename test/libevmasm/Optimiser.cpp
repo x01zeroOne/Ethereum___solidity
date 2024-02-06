@@ -1649,10 +1649,10 @@ BOOST_AUTO_TEST_CASE(cse_replace_too_large_shift)
 	});
 }
 
-BOOST_AUTO_TEST_CASE(cse_dup)
+BOOST_AUTO_TEST_CASE(cse_dup_push0)
 {
 	AssemblyItems input{
-		u256(0),
+		Instruction::PUSH0,
 		Instruction::DUP1,
 		Instruction::REVERT
 	};
@@ -1662,11 +1662,11 @@ BOOST_AUTO_TEST_CASE(cse_dup)
 	checkFullCSE(input, output);
 }
 
-BOOST_AUTO_TEST_CASE(cse_push0)
+BOOST_AUTO_TEST_CASE(cse_double_push0)
 {
 	AssemblyItems input{
-		u256(0),
-		u256(0),
+		Instruction::PUSH0,
+		Instruction::PUSH0,
 		Instruction::REVERT
 	};
 	AssemblyItems output{
