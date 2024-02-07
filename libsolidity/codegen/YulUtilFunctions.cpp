@@ -88,47 +88,34 @@ std::string YulUtilFunctions::copyToMemoryFunction(bool _fromCalldata, bool _cle
 		"_to_memory"s +
 		(_cleanup ? "_with_cleanup"s : ""s);
 
-	return m_functionCollector.createFunction(functionName, [&]() {
-		// calldata -> memory
+	return m_functionCollector.createFunction(functionName, [&](std::vector<std::string>& _args, std::vector<std::string>&) {
+		_args = {"src", "dst", "length"};
+
 		if (_fromCalldata)
-		{
 			return Whiskers(R"(
-				function <functionName>(src, dst, length) {
-					calldatacopy(dst, src, length)
-					<?cleanup>mstore(add(dst, length), 0)</cleanup>
-				}
+				calldatacopy(dst, src, length)
+				<?cleanup>mstore(add(dst, length), 0)</cleanup>
 			)")
-			("functionName", functionName)
 			("cleanup", _cleanup)
 			.render();
-		}
-		// memory -> memory
 		else
 		{
-			// use MCOPY (cancun+)
 			if (m_evmVersion.hasMcopy())
 				return Whiskers(R"(
-					function <functionName>(src, dst, length) {
-						mcopy(dst, src, length)
-						<?cleanup>mstore(add(dst, length), 0)</cleanup>
-					}
+					mcopy(dst, src, length)
+					<?cleanup>mstore(add(dst, length), 0)</cleanup>
 				)")
-				("functionName", functionName)
 				("cleanup", _cleanup)
 				.render();
-			// mstore mload loop
 			else
 				return Whiskers(R"(
-					function <functionName>(src, dst, length) {
-						let i := 0
-						for { } lt(i, length) { i := add(i, 32) }
-						{
-							mstore(add(dst, i), mload(add(src, i)))
-						}
-						<?cleanup>mstore(add(dst, length), 0)</cleanup>
+					let i := 0
+					for { } lt(i, length) { i := add(i, 32) }
+					{
+						mstore(add(dst, i), mload(add(src, i)))
 					}
+					<?cleanup>mstore(add(dst, length), 0)</cleanup>
 				)")
-				("functionName", functionName)
 				("cleanup", _cleanup)
 				.render();
 		}
