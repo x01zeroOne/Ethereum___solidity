@@ -978,6 +978,9 @@ jobs:
       - run: git config --global core.autocrlf false
       - checkout
       - run:
+          name: Install dependencies
+          command: python -m pip install --user requests
+      - run:
           name: Python unit tests
           command: python.exe test/pyscriptTests.py
       - matrix_notify_failure_unless_pr
